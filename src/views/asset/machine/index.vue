@@ -1,7 +1,7 @@
 <template>
   <div class="container">
-    <Breadcrumb :items="['menu.asset', 'menu.asset.orderInfo']" />
-    <a-card class="general-card" :title="$t('menu.asset.orderInfo')">
+    <Breadcrumb :items="['menu.asset', 'menu.asset.machine']" />
+    <a-card class="general-card" :title="$t('menu.asset.machine')">
       <a-row>
         <a-col :flex="1">
           <a-form
@@ -11,27 +11,6 @@
             label-align="left"
           >
             <a-row :gutter="16">
-              <a-col :span="7">
-                <a-form-item
-                  field="con_name"
-                  :label="$t('menu.asset.orderInfo.conName')"
-                >
-                  <a-input
-                    v-model="formModel.conName"
-                    :placeholder="$t('orderInfo.form.conName.placeholder')"
-                  />
-                </a-form-item>
-                <a-form-item
-                  field="order_name"
-                  :label="$t('order.form.order_name')"
-                >
-                  <a-input
-                    v-model="formModel.orderName"
-                    :placeholder="$t('order.form.order_name.placeholder')"
-                  />
-                </a-form-item>
-              </a-col>
-
               <a-col :span="7">
                 <a-form-item
                   field="first_type"
@@ -62,15 +41,6 @@
               </a-col>
 
               <a-col :span="7">
-                <a-form-item
-                  field="info_name"
-                  :label="$t('orderInfo.form.order_infoName')"
-                >
-                  <a-input
-                    v-model="formModel.infoName"
-                    :placeholder="$t('order.form.order_infoName.placeholder')"
-                  />
-                </a-form-item>
                 <a-form-item field="name" :label="$t('orderInfo.form.name')">
                   <a-input
                     v-model="formModel.name"
@@ -115,22 +85,14 @@
             :scroll="scrollPercent"
           >
             <template #optional="renderData">
-              <a-button size="mini" @click="updateForm(renderData.record)"
-                >编辑</a-button
-              >
+              <a-button @click="updateForm(renderData.record)">编辑</a-button>
               <!--              <a-button @click="openDelConfirm(renderData.record)">删除</a-button>-->
               <a-popconfirm
                 content="是否删除"
                 @ok="deleteById(renderData.record)"
               >
-                <a-button size="mini">删除</a-button>
+                <a-button>删除</a-button>
               </a-popconfirm>
-              <a-button size="mini" @click="inProperty(renderData.record)"
-                >入库</a-button
-              >
-              <a-button size="mini" @click="queryInRecord(renderData.record)"
-                >入库记录</a-button
-              >
             </template>
           </a-table>
         </a-col>
@@ -141,12 +103,12 @@
       v-model:visible="visible"
       :closable="false"
       :mask-closable="false"
-      title="新增订单明细"
+      title="新增资源"
       width="70%"
       height="50%"
     >
-      <CreateOrderInfo
-        ref="orderInfo"
+      <CreateMachine
+        ref="createMachineForm"
         :type-date="typeDate"
         :company-select-data="companySelectData"
         :unit-select-data="unitSelectData"
@@ -162,20 +124,20 @@
     </a-modal>
 
     <a-modal
-      v-model:visible="updateVisible"
+      v-model:visible="updateFormVisible"
       :closable="false"
       :mask-closable="false"
-      title="编辑订单明细"
+      title="编辑资源"
       width="70%"
       height="50%"
     >
-      <UpdateOrderInfo
-        ref="updateOrderInfo"
+      <UpdateMachine
+        ref="updateMachineForm"
         :type-date="typeDate"
         :company-select-data="companySelectData"
         :unit-select-data="unitSelectData"
         :order-data="orderData"
-        @close-create-form="closeCreateForm"
+        @close-create-form="closeUpdateForm"
         @fetch-data="fetchData"
       />
 
@@ -184,89 +146,33 @@
         <a-button @click="handelUpdateCancel">取消</a-button>
       </template>
     </a-modal>
-
-    <a-modal
-      v-model:visible="inRepositoryVisible"
-      :closable="false"
-      :mask-closable="false"
-      title="入库"
-      width="70%"
-      height="50%"
-    >
-      <InRepository
-        ref="inRepositoryForm"
-        :type-date="typeDate"
-        :company-select-data="companySelectData"
-        :unit-select-data="unitSelectData"
-        :order-data="orderData"
-        @close-create-form="closeCreateForm"
-        @fetch-data="fetchData"
-      />
-
-      <template #footer>
-        <a-button @click="handleInReOk">确定</a-button>
-        <a-button @click="handelInReCancel">取消</a-button>
-      </template>
-    </a-modal>
-
-    <a-modal
-      v-model:visible="inRecordVisible"
-      :closable="false"
-      :mask-closable="false"
-      title="入库记录"
-      width="70%"
-      height="50%"
-    >
-      <InRecord ref="inRecordForm" @close-create-form="closeCreateForm" />
-    </a-modal>
   </div>
 </template>
 
 <script lang="ts" setup>
   import { ref } from 'vue';
+  import CreateMachine from '@/views/asset/machine/components/createMachine.vue';
+  import UpdateMachine from '@/views/asset/machine/components/updateMachine.vue';
   import {
-    deleteOrderInfoById,
+    deleteByMachineId,
     firstSecond,
-    OrderInfo,
+    Machine,
     propertySecondType,
-    queryOrderAsSelect,
-    queryOrderInfoList,
+    queryMachineList,
     queryTypeList,
     queryUnitAsSelect,
     Unit,
-  } from '@/views/asset/orderInfo/tsutils/orderInfo';
-  import CreateOrderInfo from '@/views/asset/orderInfo/components/createOrderInfo.vue';
-  import UpdateOrderInfo from '@/views/asset/orderInfo/components/updateOrderInfo.vue';
-  import InRepository from '@/views/asset/orderInfo/components/inRepository.vue';
-  import InRecord from '@/views/asset/orderInfo/components/inRecord.vue';
-  import {
-    companyRecord,
-    queryCompanySelect,
-  } from '@/views/list/company/tsutils/companyList';
-  import { Order } from '../order/tsutils/order';
+  } from './machineutils/machine';
 
-  const scrollPercent = {
-    x: '160%',
-    y: '100%',
-  };
   /**
    * 初始化查询条件表单
    */
   const generateFormModel = () => {
     return {
-      conName: undefined,
-      orderName: '',
       firstType: undefined,
       secondType: undefined,
-      infoName: '',
       name: '',
     };
-  };
-  /**
-   * 重置
-   */
-  const reset = () => {
-    formModel.value = generateFormModel();
   };
 
   const columns = [
@@ -287,65 +193,39 @@
       dataIndex: 'unitName',
     },
     {
-      title: '单价/元',
-      dataIndex: 'onePrice',
-    },
-    {
-      title: '采购数量',
-      dataIndex: 'amount',
-    },
-    {
-      title: '总价/元',
-      dataIndex: 'oneTotalPrice',
-    },
-    {
       title: '规格',
       dataIndex: 'specs',
     },
     {
-      title: '生产日期',
-      dataIndex: 'makeDate',
-    },
-    {
-      title: '报废日期',
-      dataIndex: 'destroyDate',
-    },
-    {
-      title: '购买日期',
-      dataIndex: 'buyDate',
-    },
-    {
-      title: '合同名称',
-      dataIndex: 'conName',
-    },
-    {
-      title: '订单名称',
-      dataIndex: 'orderName',
-    },
-    {
-      title: '订单明细',
-      dataIndex: 'infoName',
+      title: '其他配置',
+      dataIndex: 'config',
     },
     {
       title: '操作',
       slotName: 'optional',
-      width: 250,
-      fixed: 'right',
     },
   ];
 
+  /**
+   * 重置
+   */
+  const reset = () => {
+    formModel.value = generateFormModel();
+  };
+
   const formModel = ref(generateFormModel());
-  const orderInfo: any = ref(null);
+  const createMachineForm: any = ref(null);
+  const updateMachineForm: any = ref(null);
 
   /**
    * 调用后台接口的函数
    * */
-  const renderData = ref<OrderInfo[]>([]);
+  const renderData = ref<Machine[]>([]);
   const fetchData = async () =>
     // params: PolicyParams = {current: 1, pageSize: 20}
     {
       try {
-        const { data } = await queryOrderInfoList(formModel.value);
+        const { data } = await queryMachineList(formModel.value);
         renderData.value = data;
         // return data
       } catch (err) {
@@ -381,20 +261,6 @@
   };
 
   /**
-   * 公司下拉
-   * */
-  const companySelectData = ref<companyRecord[]>([]);
-  const initCompany = async (comName: string) => {
-    try {
-      const params = {
-        // comName
-      };
-      const { data } = await queryCompanySelect(params);
-      companySelectData.value = data;
-    } catch (err) {}
-  };
-
-  /**
    * 单位下拉
    * */
   const unitSelectData = ref<Unit[]>([]);
@@ -406,22 +272,12 @@
   };
 
   /**
-   * 订单下拉
+   * 逻辑删除
    * */
-  const orderData = ref<Order[]>([]);
-  const initOrder = async () => {
-    try {
-      const { data } = await queryOrderAsSelect();
-      orderData.value = data;
-    } catch (err) {}
-  };
-
   const deleteById = async (renderData) => {
     try {
-      const params = {
-        id: renderData.id,
-      };
-      const { data } = await deleteOrderInfoById(params);
+      const { data } = await deleteByMachineId(renderData);
+
       if (data === 1) {
         await fetchData();
       }
@@ -440,72 +296,42 @@
   };
 
   const handleOk = () => {
-    orderInfo.value.commitForm();
+    createMachineForm.value.commitForm();
   };
 
   const handelCancel = () => {
     visible.value = false;
-    const res = orderInfo.value.reset();
+    const res = createMachineForm.value.reset();
   };
 
   /**
-   * 打开编辑form表单
+   * 打开编辑菜单
    * */
-  const updateVisible = ref(false);
-  const updateOrderInfo: any = ref(null);
-
+  const updateFormVisible = ref(false);
   const updateForm = (renderData) => {
-    updateVisible.value = true;
-    updateOrderInfo.value.generateUpdateInfoFormData(renderData);
+    updateFormVisible.value = true;
+    updateMachineForm.value.updateFormData(renderData);
   };
-  const handelUpdateCancel = () => {
-    updateVisible.value = false;
-    const res = updateOrderInfo.value.reset();
+  const closeUpdateForm = () => {
+    updateFormVisible.value = false;
   };
   const handleUpdateOk = () => {
-    updateOrderInfo.value.update();
-    updateVisible.value = false;
+    updateMachineForm.value.commitUpdateForm();
+    updateFormVisible.value = false;
   };
-
-  /**
-   * 打开入库单
-   * */
-  const inRepositoryVisible = ref(false);
-  const inRepositoryForm: any = ref(null);
-  const inProperty = (renderData) => {
-    inRepositoryVisible.value = true;
-    inRepositoryForm.value.generateInRepositoryFormData(renderData);
-  };
-
-  const handelInReCancel = () => {
-    inRepositoryVisible.value = false;
-    const res = inRepositoryForm.value.reset();
-  };
-  const handleInReOk = () => {
-    inRepositoryForm.value.inRCommit();
-    inRepositoryVisible.value = false;
-  };
-
-  /**
-   * 打开入库记录
-   * */
-  const inRecordVisible = ref(false);
-  const inRecordForm: any = ref(null);
-  const queryInRecord = (renderData) => {
-    inRecordForm.value.generateInRecordFormData(renderData);
-    inRecordVisible.value = true;
+  const handelUpdateCancel = () => {
+    updateFormVisible.value = false;
+    updateMachineForm.value.reset();
   };
 
   getInfoType();
-  initCompany('');
   initUnit();
-  initOrder();
   fetchData();
 </script>
 
 <script lang="ts">
   export default {
-    name: 'OrderIfo',
+    name: 'Machine',
   };
 </script>
 

@@ -13,6 +13,16 @@ const ASSET: AppRouteRecordRaw = {
   },
   children: [
     {
+      path: 'machine', // The midline path complies with SEO specifications
+      name: 'Machine',
+      component: () => import('@/views/asset/machine/index.vue'),
+      meta: {
+        locale: 'menu.asset.machine',
+        requiresAuth: true,
+        roles: ['*'],
+      },
+    },
+    {
       path: 'order', // The midline path complies with SEO specifications
       name: 'Order',
       component: () => import('@/views/asset/order/index.vue'),

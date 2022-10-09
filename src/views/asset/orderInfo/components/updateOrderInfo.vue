@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <a-form ref="orderInfo" layout="vertical" :model="formData">
+    <a-form ref="updateOrderInfo" layout="vertical" :model="formData">
       <a-space direction="vertical" :size="10">
         <a-card class="general-card">
           <a-row :gutter="80">
@@ -95,7 +95,7 @@
             <a-col :span="8">
               <a-form-item
                 label="资产名称"
-                field="machineId"
+                field="name"
                 :rules="[
                   {
                     required: true,
@@ -346,10 +346,10 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref } from 'vue';
+  import { reactive, ref } from 'vue';
   import {
-    insertOrderInfo,
     propertySecondType,
+    updateOrderInfoById,
   } from '@/views/asset/orderInfo/tsutils/orderInfo';
   import { FormInstance } from '@arco-design/web-vue/es/form';
   import {
@@ -360,38 +360,84 @@
   /**
    * 初始化订单明细
    */
-  const generateFormData = () => {
-    return {
-      orderId: undefined,
-      infoName: '',
-      firstType: undefined,
-      secondType: undefined,
-      machineId: undefined,
-      name: '',
-      makeDate: '',
-      destroyDate: '',
-      buyDate: '',
-      makeCompanyId: undefined,
-      makeCompany: '',
-      supplierCompanyId: undefined,
-      supplierCompany: '',
-      specs: '',
-      unit: undefined,
-      amount: undefined,
-      onePrice: undefined,
-      oneTotalPrice: 0,
-      remark: '',
-      config: '',
-    };
-  };
-  const formData = ref(generateFormData());
+  const generateUpdateInfoFormData = async (requestData) => {
+    formData.id = requestData.id;
+    formData.orderId = requestData.orderId;
+    formData.infoName = requestData.infoName;
+    formData.firstType = requestData.firstType;
+    formData.secondType = requestData.secondType;
+    formData.name = requestData.name;
+    formData.makeDate = requestData.makeDate;
+    formData.destroyDate = requestData.destroyDate;
+    formData.buyDate = requestData.buyDate;
+    formData.makeCompanyId = requestData.makeCompanyId;
+    formData.makeCompany = requestData.makeCompany;
+    formData.supplierCompanyId = requestData.supplierCompanyId;
+    formData.supplierCompany = requestData.supplierCompany;
+    formData.specs = requestData.specs;
+    formData.unit = requestData.unit;
+    formData.amount = requestData.amount;
+    formData.onePrice = requestData.onePrice;
+    formData.oneTotalPrice = requestData.oneTotalPrice;
+    formData.remark = requestData.remark;
+    formData.machineId = requestData.machineId;
+    formData.config = requestData.config;
 
-  /**
-   * 二级目录
-   * */
+    const params = {
+      firstType: formData.firstType,
+      secondType: formData.secondType,
+    };
+    const { data } = await queryMachineAsSelect(params);
+    machineData.value = data;
+
+    initSecond(requestData.firstType);
+  };
+  // const formData = ref(generateFormData())
+
+  const formData = reactive({
+    id: undefined,
+    orderId: undefined,
+    infoName: '',
+    firstType: undefined,
+    secondType: undefined,
+    name: '',
+    makeDate: '',
+    destroyDate: '',
+    buyDate: '',
+    makeCompanyId: undefined,
+    makeCompany: '',
+    supplierCompanyId: undefined,
+    supplierCompany: '',
+    specs: '',
+    unit: undefined,
+    amount: undefined,
+    onePrice: undefined,
+    oneTotalPrice: 0,
+    remark: '',
+    machineId: undefined,
+    config: '',
+  });
+
+  const props = defineProps({
+    typeDate: Object,
+    companySelectData: Array,
+    unitSelectData: Array,
+    orderData: Array,
+  });
+
   const secondDate = ref<propertySecondType[]>([]);
   const getSecond = (value) => {
-    formData.value.secondType = undefined;
+    formData.secondType = undefined;
+    for (let i = 0; i < props.typeDate?.length; i += 1) {
+      // if (value === props.typeDate?[i].id) {
+      //   secondDate.value = props?.typeDate?.value[i].children;
+      // }
+      if (value === props.typeDate?.[i].id) {
+        secondDate.value = props.typeDate?.[i].children;
+      }
+    }
+  };
+  const initSecond = (value) => {
     for (let i = 0; i < props.typeDate?.length; i += 1) {
       // if (value === props.typeDate?[i].id) {
       //   secondDate.value = props?.typeDate?.value[i].children;
@@ -406,76 +452,67 @@
    * 根据两级目录查询设备
    * */
   const machineData = ref<Machine[]>([]);
-  const getMachine = async (value) => {
-    formData.value.machineId = undefined;
+  const getMachine = async () => {
+    formData.machineId = undefined;
     const params = {
-      firstType: formData.value.firstType,
-      secondType: formData.value.secondType,
+      firstType: formData.firstType,
+      secondType: formData.secondType,
     };
     const { data } = await queryMachineAsSelect(params);
     machineData.value = data;
   };
 
+  const changeTotalPrice = () => {
+    if (
+      formData.onePrice != null &&
+      formData.onePrice != '' &&
+      formData.amount != null &&
+      formData.amount != ''
+    ) {
+      formData.oneTotalPrice = formData.onePrice * formData.amount;
+    } else {
+      formData.oneTotalPrice = 0;
+    }
+  };
+
+  const updateOrderInfo = ref<FormInstance>();
+
+  const reset = () => {
+    updateOrderInfo.value?.resetFields();
+  };
+
+  const emits = defineEmits(['fetchData']);
+  const update = async () => {
+    const res = await updateOrderInfo.value?.validate();
+    if (!res) {
+      const params = formData;
+      const { data } = await updateOrderInfoById(params);
+      emits('fetchData');
+      reset();
+    }
+  };
+
   const initUnit = (value) => {
     for (let i = 0; i < machineData.value.length; i += 1) {
       if (value === machineData.value[i].id) {
-        formData.value.specs = machineData.value[i].specs;
-        formData.value.unit = machineData.value[i].unit;
-        formData.value.name = machineData.value[i].name;
-        formData.value.config = machineData.value[i].config;
+        formData.specs = machineData.value[i].specs;
+        formData.unit = machineData.value[i].unit;
+        formData.name = machineData.value[i].name;
+        formData.config = machineData.value[i].config;
       }
     }
   };
 
-  const changeTotalPrice = () => {
-    if (
-      formData.value.onePrice != null &&
-      formData.value.onePrice != '' &&
-      formData.value.amount != null &&
-      formData.value.amount != ''
-    ) {
-      formData.value.oneTotalPrice =
-        formData.value.onePrice * formData.value.amount;
-    } else {
-      formData.value.oneTotalPrice = 0;
-    }
-  };
-
-  const emits = defineEmits(['fetchData', 'closeCreateForm']);
-  const orderInfo = ref<FormInstance>();
-
-  const reset = () => {
-    orderInfo.value?.resetFields();
-  };
-
-  const commitForm = async () => {
-    const res = await orderInfo.value?.validate();
-    if (!res) {
-      const params = formData.value;
-      const { data } = await insertOrderInfo(params);
-      emits('closeCreateForm');
-      reset();
-      emits('fetchData');
-    } else {
-    }
-  };
-
-  const props = defineProps({
-    typeDate: Object,
-    companySelectData: Array,
-    unitSelectData: Array,
-    orderData: Array,
-  });
-
   defineExpose({
-    commitForm,
+    generateUpdateInfoFormData,
+    update,
     reset,
   });
 </script>
 
 <script lang="ts">
   export default {
-    name: 'CreateOrderInfo',
+    name: 'UpdateOrderInfo',
   };
 </script>
 

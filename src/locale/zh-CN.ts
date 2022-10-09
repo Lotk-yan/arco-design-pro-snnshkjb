@@ -9,6 +9,7 @@ import localeSearchTable from '@/views/list/search-table/locale/zh-CN';
 import localeCardList from '@/views/list/card/locale/zh-CN';
 import localeContract from '@/views/list/contract/locale/zh-CN';
 
+import localeMachine from '@/views/asset/machine/locale/zh-CN';
 import localeOrder from '@/views/asset/order/locale/zh-CN';
 import localeOrderInfo from '@/views/asset/orderInfo/locale/zh-CN';
 
@@ -58,6 +59,7 @@ export default {
   ...localeSearchTable,
   ...localeCardList,
   ...localeContract,
+  ...localeMachine,
   ...localeOrder,
   ...localeOrderInfo,
   ...localeStepForm,

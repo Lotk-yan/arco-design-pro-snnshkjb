@@ -122,6 +122,7 @@
 
   import {
     ConSelect,
+    deleteOrderById,
     Order,
     queryConAsSelect,
     queryOrderProList,
@@ -228,6 +229,19 @@
         // you can report use errorHandler or other
       }
     };
+
+  const deleteById = async (renderData) => {
+    try {
+      const params = {
+        id: renderData.id,
+      };
+
+      const { data } = await deleteOrderById(params);
+      if (data === 1) {
+        await fetchData();
+      }
+    } catch (err) {}
+  };
 
   const updateVisible = ref(false);
   const updateOrder: any = ref(null);

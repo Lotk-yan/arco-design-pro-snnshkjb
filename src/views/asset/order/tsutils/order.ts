@@ -39,3 +39,7 @@ export function queryOrderProList(data: queryOrder) {
 export function updateOrderById(data: Order) {
   return axios.post('/order/updateById', data);
 }
+
+export function deleteOrderById({ id: number }) {
+  return axios.post('/order/delete', { id: number });
+}
