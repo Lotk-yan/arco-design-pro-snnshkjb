@@ -13,6 +13,8 @@ import localeMachine from '@/views/asset/machine/locale/en-US';
 import localeOrder from '@/views/asset/order/locale/en-US';
 import localeOrderInfo from '@/views/asset/orderInfo/locale/en-US';
 
+import localeInventory from '@/views/stock/inventory/locale/en-US';
+
 import localeStepForm from '@/views/form/step/locale/en-US';
 import localeGroupForm from '@/views/form/group/locale/en-US';
 
@@ -40,6 +42,7 @@ export default {
   'menu.server.monitor': 'Monitor-Server',
   'menu.list': 'List',
   'menu.asset': 'Asset',
+  'menu.stock': 'Stock Manager',
   'menu.result': 'Result',
   'menu.exception': 'Exception',
   'menu.form': 'Form',
@@ -74,5 +77,6 @@ export default {
   ...locale500,
   ...localeUserInfo,
   ...localeUserSetting,
+  ...localeInventory,
   /** simple end */
 };

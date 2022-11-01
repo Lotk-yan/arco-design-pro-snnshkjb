@@ -28,6 +28,10 @@ export function queryConAsSelect() {
   return axios.post('/contract/queryAsSelect');
 }
 
+export function queryConAsSelecExcept({ id: number }) {
+  return axios.post('/contract/queryAsSelectExcept', { id: number });
+}
+
 export function inertOrder(data: Order) {
   return axios.post('/order/insert', data);
 }

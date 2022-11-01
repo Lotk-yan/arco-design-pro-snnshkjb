@@ -13,6 +13,8 @@ import localeMachine from '@/views/asset/machine/locale/zh-CN';
 import localeOrder from '@/views/asset/order/locale/zh-CN';
 import localeOrderInfo from '@/views/asset/orderInfo/locale/zh-CN';
 
+import localeInventory from '@/views/stock/inventory/locale/zh-CN';
+
 import localeStepForm from '@/views/form/step/locale/zh-CN';
 import localeGroupForm from '@/views/form/group/locale/zh-CN';
 
@@ -40,6 +42,7 @@ export default {
   'menu.server.monitor': '实时监控-服务端',
   'menu.list': '列表页',
   'menu.asset': '资产管理',
+  'menu.stock': '库存管理',
   'menu.result': '结果页',
   'menu.exception': '异常页',
   'menu.form': '表单页',
@@ -74,5 +77,6 @@ export default {
   ...locale500,
   ...localeUserInfo,
   ...localeUserSetting,
+  ...localeInventory,
   /** simple end */
 };
